@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Trust Scorecard</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ffffff;
+    --panel:#ffffff;
+    --panel-2:#f4f4f4;
+    --line:#dcdcdc;
+    --text:#000000;
+    --muted:#333333;
+    --red:#eb0665;   /* primary accent: pink */
+    --orange:#f78a08;
+    --pink:#eb0665;
+    --black:#000000;
+    --white:#ffffff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--bg)}
+  body{
+    font-family:'Montserrat',Arial,sans-serif;
+    color:var(--text);
+    font-size:19px;
+    line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:32px 18px 48px}
+  .frame{
+    border:4px solid var(--red);
+    box-shadow:0 10px 30px rgba(0,0,0,.08);
+    border-radius:26px;
+    background:var(--panel);
+    padding:40px 34px;
+  }
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  /* Brand */
+  .brand{
+    display:inline-block;font-weight:900;font-size:16px;letter-spacing:.14em;
+    text-transform:uppercase;margin-bottom:22px;
+    background:linear-gradient(90deg,var(--orange),var(--pink));
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .eyebrow{
+    display:inline-flex;align-items:center;gap:10px;
+    font-size:15px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--red);margin-bottom:14px;
+  }
+  .rec{width:12px;height:12px;border-radius:50%;background:var(--red);box-shadow:0 0 0 4px rgba(235,6,101,.2);animation:blink 1.4s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  h1{font-size:40px;line-height:1.15;font-weight:900;margin-bottom:20px}
+  h1 em{font-style:normal;color:var(--pink)}
+  h2{font-size:30px;line-height:1.2;font-weight:800;margin-bottom:14px}
+  p.lead{color:var(--muted);font-size:20px;margin-bottom:16px}
+  .badges{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0 30px}
+  .badge{
+    border:2px solid var(--line);border-radius:999px;padding:8px 16px;
+    font-size:16px;font-weight:700;color:var(--text);background:var(--panel-2)
+  }
+  .btn{
+    display:inline-block;border:none;cursor:pointer;text-decoration:none;
+    background:var(--red);color:#fff;font-family:inherit;font-weight:800;
+    font-size:21px;padding:18px 36px;border-radius:999px;
+    transition:transform .15s ease, background .15s ease;
+  }
+  .btn:hover{transform:translateY(-2px);background:#c80556}
+  .btn.ghost{background:transparent;border:2px solid var(--line);color:var(--muted);font-size:18px;padding:14px 26px}
+  .btn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+
+  /* Quiz */
+  .topbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;font-size:16px;font-weight:700;color:var(--muted)}
+  .dim-tag{color:var(--pink);text-transform:uppercase;letter-spacing:.1em}
+  .progress{height:10px;background:var(--panel-2);border-radius:999px;overflow:hidden;margin-bottom:30px}
+  .progress span{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--orange),var(--red));transition:width .35s ease}
+  .q{font-size:27px;line-height:1.3;font-weight:800;margin-bottom:24px}
+  .opts{display:grid;gap:12px;margin-bottom:28px}
+  .opt{
+    display:flex;align-items:center;gap:16px;text-align:left;width:100%;
+    background:var(--panel-2);border:2px solid var(--line);border-radius:16px;
+    padding:18px 20px;color:var(--text);font-family:inherit;font-size:19px;font-weight:600;
+    cursor:pointer;transition:border-color .15s, background .15s;
+  }
+  .opt:hover{border-color:#999}
+  .opt .dot{flex:0 0 22px;height:22px;border-radius:50%;border:2px solid #999}
+  .opt.sel{border-color:var(--red);background:#fde7f0}
+  .opt.sel .dot{border-color:var(--red);background:var(--red);box-shadow:inset 0 0 0 4px #fde7f0}
+  .nav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+  /* Results */
+  .score-wrap{text-align:center;margin-bottom:26px}
+  .score{font-size:84px;font-weight:900;line-height:1}
+  .score small{font-size:30px;color:var(--muted);font-weight:700}
+  .tier{
+    display:inline-block;margin-top:14px;padding:9px 20px;border-radius:999px;
+    font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase;
+  }
+  .result-copy{margin-bottom:30px}
+  .result-copy h2{text-align:center}
+  .result-copy p{color:var(--muted);font-size:20px;margin-bottom:12px}
+  .dims{border-top:2px solid var(--line);padding-top:24px;margin-bottom:28px}
+  .dims h3{font-size:16px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:16px}
+  .dim{margin-bottom:18px}
+  .dim-row{display:flex;justify-content:space-between;font-weight:700;font-size:19px;margin-bottom:6px}
+  .bar{height:12px;background:var(--panel-2);border-radius:999px;overflow:hidden}
+  .bar span{display:block;height:100%;border-radius:999px;transition:width .8s ease}
+  .focus{
+    background:var(--panel-2);border-left:6px solid var(--orange);border-radius:12px;
+    padding:20px 22px;margin-bottom:30px
+  }
+  .focus strong{display:block;color:var(--pink);font-size:16px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px}
+  .focus p{font-size:19px}
+  .cta{text-align:center}
+  .cta p{color:var(--muted);font-size:18px;margin-bottom:18px}
+  .restart{display:block;margin:20px auto 0;background:none;border:none;color:var(--muted);font-family:inherit;font-size:16px;text-decoration:underline;cursor:pointer}
+  .foot{text-align:center;color:#555;font-size:14px;margin-top:22px}
+
+  @media (max-width:560px){
+    body{font-size:18px}
+    .wrap{padding:16px 12px 32px}
+    .frame{padding:28px 20px;border-radius:20px}
+    h1{font-size:31px}
+    h2{font-size:25px}
+    .q{font-size:23px}
+    .opt{font-size:18px;padding:16px}
+    .score{font-size:68px}
+    .btn{width:100%;text-align:center}
+    .nav .btn{width:auto;flex:1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="frame">
+
+    <!-- INTRO -->
+    <section class="screen active" id="intro">
+      <div class="brand">LEIB Productions</div><br>
+      <div class="eyebrow"><span class="rec"></span>Video Trust Scorecard</div>
+      <h1>You've earned the trust. <em>Now let them see it.</em></h1>
+      <p class="lead">Prospects are meeting you online before they ever call. Are they meeting the real you, or just your résumé?</p>
+      <p class="lead">Answer 8 quick questions to see how well your video presence is building know, like, and trust, and where it's quietly costing you clients.</p>
+      <div class="badges">
+        <span class="badge">2 minutes</span>
+        <span class="badge">8 questions</span>
+        <span class="badge">Instant score</span>
+        <span class="badge">Your next step</span>
+      </div>
+      <button class="btn" onclick="startQuiz()">Start My Scorecard</button>
+    </section>
+
+    <!-- QUIZ -->
+    <section class="screen" id="quiz">
+      <div class="topbar">
+        <span class="dim-tag" id="dimTag"></span>
+        <span id="stepCount"></span>
+      </div>
+      <div class="progress"><span id="progBar"></span></div>
+      <div class="q" id="qText"></div>
+      <div class="opts" id="opts"></div>
+      <div class="nav">
+        <button class="btn ghost" id="backBtn" onclick="prevQ()">Back</button>
+        <button class="btn" id="nextBtn" onclick="nextQ()" disabled>Next</button>
+      </div>
+    </section>
+
+    <!-- RESULTS -->
+    <section class="screen" id="results">
+      <div class="score-wrap">
+        <div class="score"><span id="scoreNum">0</span><small>/100</small></div>
+        <div class="tier" id="tierBadge"></div>
+      </div>
+      <div class="result-copy">
+        <h2 id="tierHead"></h2>
+        <p id="tierMsg"></p>
+        <p id="tierNext"></p>
+      </div>
+      <div class="dims">
+        <h3>Your breakdown</h3>
+        <div id="dimList"></div>
+      </div>
+      <div class="focus">
+        <strong>Where to focus first</strong>
+        <p id="focusText"></p>
+      </div>
+      <div class="cta">
+        <p>Neco's remote framework gets professionals on camera in under 2 hours a month, with no crew and no studio.</p>
+        <!-- Replace the href below with Neco's booking link -->
+        <a class="btn" id="ctaBtn" href="#" target="_blank" rel="noopener">Book a Free Camera Check</a>
+        <button class="restart" onclick="restart()">Retake the scorecard</button>
+      </div>
+    </section>
+
+  </div>
+  <div class="foot">Video Trust Scorecard · LEIB Productions</div>
+</div>
+
+<script>
+const DIMS = {
+  visibility:  {label:"Visibility",  color:"#f78a08",
+    tip:"Prospects can't find you on camera. Start with one short video on your website or LinkedIn profile answering the question clients ask you most. One good video beats zero every time."},
+  consistency: {label:"Consistency", color:"#eb0665",
+    tip:"Your video shows up when inspiration does. A simple monthly rhythm, even one short video, keeps you in front of people long enough for trust to build."},
+  conversion:  {label:"Conversion",  color:"#000000",
+    tip:"People are watching, but there's nowhere to go next. Every video should end with one clear step: book a call, download a guide, or reply with a question."},
+  comfort:     {label:"Comfort",     color:"linear-gradient(90deg,#f78a08,#eb0665)",
+    tip:"The camera still feels like a hurdle. The fix is usually process, not personality: a short prompt list, a remote setup at your desk, and a director in your ear."}
+};
+
+const QUESTIONS = [
+  {dim:"visibility", q:"If a prospect searched your name right now, what would they find?",
+   opts:["A bio and a headshot. No video of me.","An old video or a webinar recording.","A few videos, scattered across platforms.","Current videos of me on my website and LinkedIn."]},
+  {dim:"visibility", q:"Does your website let visitors see and hear you?",
+   opts:["No video of me anywhere on it.","There's a video, but it's buried.","Yes, on an inside page.","Yes, front and center on my homepage or bio."]},
+  {dim:"consistency", q:"How often do you publish a new video?",
+   opts:["Rarely or never.","A few times a year.","About once a month.","Every week or two."]},
+  {dim:"consistency", q:"When a new video does happen, how does it come about?",
+   opts:["Only when someone else asks me to.","When inspiration strikes.","I have a loose list of ideas.","I follow a planned content calendar."]},
+  {dim:"conversion", q:"After someone watches one of your videos, what happens next?",
+   opts:["Nothing. The video just ends.","They might find my contact page on their own.","There's a link in the description.","There's a clear next step: book, call, or download."]},
+  {dim:"conversion", q:"Can you name a client who came to you because of a video?",
+   opts:["No.","Maybe, but I can't be sure.","Once or twice.","Yes, it happens regularly."]},
+  {dim:"comfort", q:"When the camera turns on, you feel…",
+   opts:["Like avoiding it entirely.","Stiff and over-rehearsed.","Fine after a few takes.","Like myself, talking to a client."]},
+  {dim:"comfort", q:"How long does one short video take you, start to finish?",
+   opts:["I've never made one.","Days, with a crew or a lot of back-and-forth.","A few hours.","Under an hour."]}
+];
+
+const TIERS = [
+  {min:0, name:"Hidden Gem", color:"#f78a08", ink:"#000000",
+   head:"You're good at what you do. Online, almost no one can tell.",
+   msg:"Prospects are meeting your credentials, not you. That means they're comparing you on paper, where everyone in your field looks about the same.",
+   next:"The good news: you don't need a studio or a production budget to change this. A few well-made videos can do more for trust than years of polished bios."},
+  {min:40, name:"Occasional Cameo", color:"#eb0665", ink:"#ffffff",
+   head:"They've seen you. They haven't gotten to know you yet.",
+   msg:"You've proven you can show up on camera. The gap is rhythm and direction. Video that appears now and then gets noticed, but it doesn't build the steady familiarity that makes someone pick up the phone.",
+   next:"A simple, repeatable system would turn the effort you're already making into a reliable source of inquiries."},
+  {min:75, name:"Trusted Face", color:"#000000", ink:"#ffffff",
+   head:"Your camera presence is working for you.",
+   msg:"Prospects can find you, hear you, and get a real sense of who you are before the first meeting. That's a real advantage in a referral-driven business.",
+   next:"Your next gains come from sharpening: tighter calls to action, better search visibility, and getting more mileage out of every recording."}
+];
+
+let current = 0;
+const answers = new Array(QUESTIONS.length).fill(null);
+
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function startQuiz(){ current = 0; renderQ(); show('quiz'); }
+
+function renderQ(){
+  const item = QUESTIONS[current];
+  document.getElementById('dimTag').textContent = DIMS[item.dim].label;
+  document.getElementById('stepCount').textContent = `Question ${current+1} of ${QUESTIONS.length}`;
+  document.getElementById('progBar').style.width = `${(current/QUESTIONS.length)*100}%`;
+  document.getElementById('qText').textContent = item.q;
+  const wrap = document.getElementById('opts');
+  wrap.innerHTML = '';
+  item.opts.forEach((text,i)=>{
+    const b = document.createElement('button');
+    b.className = 'opt' + (answers[current]===i ? ' sel' : '');
+    b.innerHTML = '<span class="dot"></span><span></span>';
+    b.lastChild.textContent = text;
+    b.onclick = ()=>{ answers[current]=i; renderQ(); };
+    wrap.appendChild(b);
+  });
+  document.getElementById('backBtn').style.visibility = current===0 ? 'hidden' : 'visible';
+  const next = document.getElementById('nextBtn');
+  next.disabled = answers[current]===null;
+  next.textContent = current===QUESTIONS.length-1 ? 'See My Score' : 'Next';
+}
+
+function nextQ(){
+  if(answers[current]===null) return;
+  if(current < QUESTIONS.length-1){ current++; renderQ(); }
+  else { showResults(); }
+}
+function prevQ(){ if(current>0){ current--; renderQ(); } }
+
+function showResults(){
+  const dimScores = {};
+  Object.keys(DIMS).forEach(k=>dimScores[k]={pts:0,max:0});
+  QUESTIONS.forEach((q,i)=>{ dimScores[q.dim].pts += answers[i]; dimScores[q.dim].max += 3; });
+  const total = answers.reduce((a,b)=>a+b,0);
+  const pct = Math.round((total/(QUESTIONS.length*3))*100);
+
+  const tier = [...TIERS].reverse().find(t=>pct>=t.min);
+  const badge = document.getElementById('tierBadge');
+  badge.textContent = tier.name;
+  badge.style.background = tier.color;
+  badge.style.color = tier.ink;
+  document.getElementById('tierHead').textContent = tier.head;
+  document.getElementById('tierMsg').textContent = tier.msg;
+  document.getElementById('tierNext').textContent = tier.next;
+
+  const list = document.getElementById('dimList');
+  list.innerHTML = '';
+  let weakest = null, weakPct = 101;
+  Object.keys(DIMS).forEach(k=>{
+    const p = Math.round((dimScores[k].pts/dimScores[k].max)*100);
+    if(p < weakPct){ weakPct = p; weakest = k; }
+    const row = document.createElement('div');
+    row.className = 'dim';
+    row.innerHTML = `<div class="dim-row"><span>${DIMS[k].label}</span><span>${p}%</span></div>
+      <div class="bar"><span style="width:0;background:${DIMS[k].color}"></span></div>`;
+    list.appendChild(row);
+    setTimeout(()=>{ row.querySelector('.bar span').style.width = p + '%'; }, 120);
+  });
+  document.getElementById('focusText').textContent =
+    weakPct >= 85 ? "Every area is strong. The opportunity now is reach: getting your best videos in front of more of the right people." : DIMS[weakest].tip;
+
+  show('results');
+  animateScore(pct);
+}
+
+function animateScore(target){
+  const el = document.getElementById('scoreNum');
+  let n = 0;
+  const step = Math.max(1, Math.round(target/40));
+  const t = setInterval(()=>{
+    n = Math.min(target, n + step);
+    el.textContent = n;
+    if(n >= target) clearInterval(t);
+  }, 25);
+}
+
+function restart(){ answers.fill(null); show('intro'); }
+</script>
+</body>
+</html>
